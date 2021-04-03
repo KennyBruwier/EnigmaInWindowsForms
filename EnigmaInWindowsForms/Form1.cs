@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Drawing.Drawing2D;
+using System.Drawing;
 
 namespace EnigmaInWindowsForms
 {
@@ -23,28 +24,54 @@ namespace EnigmaInWindowsForms
         private readonly Font myFontL = new Font("Book Antiqua", 10.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
         private readonly Font myFontS = new Font("Book Antiqua", 5.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
         private Enigma enigma = new Enigma();
-        private TextBox tbInput;
-        private TextBox tbOutput;
+        private TextBox tbInput, tbOutput;
         private List <Label> lblRotors = new List<Label>();
         
         public Form1()
         {
             SuspendLayout();
-            CreateDualAlfaButtons(new Point(0, 30), "B");
-            CreateDualAlfaButtons(new Point(120, 30), "III", true);
-            CreateDualAlfaButtons(new Point(240, 30), "II", true);
-            CreateDualAlfaButtons(new Point(360, 30), "I", true);
-            CreateDualAlfaButtons(new Point(480, 30), "ETW");
-            CreateDualAlfaButtons(new Point(600, 30), "Plugboard");
-            CreateOldKeyboard(new Point(725, 300), "Key board");
-            CreateOldKeyboard(new Point(725, 100), "Lamp board", false);
+            CreateDualAlfaButtons(new Point(0, 20), "B");
+            CreateDualAlfaButtons(new Point(120, 20), "III", true);
+            CreateDualAlfaButtons(new Point(240, 20), "II", true);
+            CreateDualAlfaButtons(new Point(360, 20), "I", true);
+            CreateDualAlfaButtons(new Point(480, 20), "ETW");
+            CreateDualAlfaButtons(new Point(600, 20), "Plugboard");
+            CreateOldKeyboard(new Point(725, 400), "Keyboard");
+            CreateResetBtn(new Point(835, 555));
+            CreateOldKeyboard(new Point(725, 200), "Lampboard", false);
             ResumeLayout(false);
             InitializeComponent();
             BackColor = SystemColors.ControlDark;
             Width = 1020;
             Height = 650;
+            //Pen pen = new Pen(Color.FromArgb(255, 0, 0, 0));
+            //e.Graphics.DrawLine(pen, 20, 10, 300, 100);
         }
-        public void CreateOldKeyboard(Point point, string name, bool bEnable = true)
+        private void CreateResetBtn(Point location, int iSize = 50)
+        {
+            PictureBox pbReset = new PictureBox
+            {
+                BackColor = Color.Transparent,
+                BackgroundImage = Properties.Resources.reset,
+                BackgroundImageLayout = ImageLayout.Stretch,
+                Cursor = Cursors.Hand,
+                Location = location,
+                Name = "pbReset",
+                Size = new Size(iSize, iSize),
+                SizeMode = PictureBoxSizeMode.StretchImage,
+                TabIndex = 0,
+                TabStop = false,
+            };
+            pbReset.Click += new EventHandler(ResetEnigma);
+            Controls.Add(pbReset);
+        }
+        private void ResetEnigma(object sender, EventArgs e)
+        {
+            enigma.ResetAllRotors();
+            LblRotationRefresh();
+            TbInOutput_Switch(true);
+        }
+        private void CreateOldKeyboard(Point point, string name, bool bEnable = true)
         {
             Button button;
             Label label;
@@ -102,7 +129,7 @@ namespace EnigmaInWindowsForms
                 XtoAdd = 0;
             }
         }
-        public void CreateDualAlfaButtons(Point point, string name, bool bRotor = false)
+        private void CreateDualAlfaButtons(Point point, string name, bool bRotor = false)
         {
             string trimmedName = ToUpperFirstLetter(TrimSpaces(name));
             if (bRotor)
@@ -137,14 +164,15 @@ namespace EnigmaInWindowsForms
                 }
                 Label lblRotation = new Label
                 {
-                    Location = new Point(point.X + 40, point.Y + (26 * 20) + 30),
-                    Padding = new Padding(3),
-                    Width = 40,
-                    Height = 20,
+                    Location = new Point(point.X + 20, point.Y + (26 * 20) + 40),
+                    Padding = new Padding(2),
+                    Width = 80,
+                    Height = 25,
                     Name = "lblRot" + trimmedName.Substring(0, (trimmedName.Length > 5) ? 5 : trimmedName.Length),
                     Text = "A",
                     TextAlign = ContentAlignment.MiddleCenter,
-                    Font = myFont
+                    BackColor = SystemColors.ButtonHighlight,
+                    Font = myFontL
                 };
                 Controls.Add(lblRotation);
             }
@@ -164,7 +192,7 @@ namespace EnigmaInWindowsForms
             CreateAlfabetButtons(point, trimmedName);
             CreateAlfabetButtons(new Point(point.X + 100, point.Y), trimmedName, false);
         }
-        public void CreateAlfabetButtons(Point point, string name, bool bLeft = true, bool bRotor = false)
+        private void CreateAlfabetButtons(Point point, string name, bool bLeft = true)
         {
             string trimmedName = ToUpperFirstLetter(TrimSpaces(name));
             char cA = 'A';
@@ -196,7 +224,7 @@ namespace EnigmaInWindowsForms
                 Controls.Add(button);
             }
         }
-        public string ToUpperFirstLetter(string source)
+        private string ToUpperFirstLetter(string source)
         {
             if (string.IsNullOrEmpty(source))
                 return string.Empty;
@@ -204,7 +232,7 @@ namespace EnigmaInWindowsForms
             letters[0] = char.ToUpper(letters[0]);
             return new string(letters);
         }
-        public string TrimSpaces(string source)
+        private string TrimSpaces(string source)
         {
             return String.Concat(source.Where(c => !Char.IsWhiteSpace(c)));
         }
@@ -212,31 +240,77 @@ namespace EnigmaInWindowsForms
         {
 
         }
-        void KeyPressed(object sender, EventArgs e)
+        private void KeyPressed(object sender, EventArgs e)
         {
             Button button = sender as Button;
             char Encrypted = enigma.Gebruiken(Convert.ToChar(button.Text));
-            if (tbInput.Text == "<INPUT>") tbInput.Text = "";
+            TbInOutput_Switch();
+            BtnSwitchEnabled("btnLampboard" + Encrypted);
             tbInput.Text += button.Text;
-            if (tbOutput.Text == "<OUTPUT>") tbOutput.Text = "";
-            else SwitchEnabled("btnLampboard"+tbOutput.Text.Substring(tbOutput.Text.Length - 1));
             tbOutput.Text += Encrypted;
-            SwitchEnabled("btnLampboard" + Encrypted);
+            LblRotationRefresh();
+        }
+        private void TbInOutput_Switch(bool bReset = false)
+        {
+            if (bReset)
+            {
+                if (tbOutput.Text != "<OUTPUT") 
+                    if (tbOutput.Text.Length > 0) 
+                        BtnSwitchEnabled("btnLampboard" + tbOutput.Text.Substring(tbOutput.Text.Length - 1));
+                tbOutput.Text = "<OUTPUT>";
+                tbInput.Text = "<INPUT>";
+            }
+            else
+            {
+                if (tbOutput.Text == "<OUTPUT>") tbOutput.Text = "";
+                else
+                {
+                    if (tbOutput.Text.Length > 0) 
+                        BtnSwitchEnabled("btnLampboard" + tbOutput.Text.Substring(tbOutput.Text.Length - 1));
+                }
+                if (tbInput.Text == "<INPUT>") tbInput.Text = "";
+            }
 
         }
-        private void SwitchEnabled(string btnName)
+        private void LblRotationRefresh()
+        {
+            (SearchControl("lblRotI") as Label).Text = Convert.ToChar(enigma.Rotors[0].myRotation + 'A').ToString();
+            (SearchControl("lblRotII") as Label).Text = Convert.ToChar(enigma.Rotors[1].myRotation + 'A').ToString();
+            (SearchControl("lblRotIII") as Label).Text = Convert.ToChar(enigma.Rotors[2].myRotation + 'A').ToString();
+        }
+        private void BtnSwitchEnabled(string btnName)
         {
             foreach (Button button in Controls.OfType<Button>())
             {
                 if (button.Name == btnName)
                 {
-                    button.Enabled = button.Enabled? false: true;
+                    button.Enabled = !button.Enabled;
                 }    
             }
         }
-        private void button1_Click(object sender, EventArgs e)
+        private Control SearchControl(string btnName)
+        {
+            Control controlZero = null;
+            foreach (Control control in Controls)
+            {
+                if (control.Name == btnName)
+                    return control;
+            }
+            return controlZero;
+        }
+
+        public void DrawLinePointF(PaintEventArgs e)
         {
 
+            // Create pen.
+            Pen blackPen = new Pen(Color.Black, 3);
+
+            // Create points that define line.
+            PointF point1 = new PointF(100.0F, 100.0F);
+            PointF point2 = new PointF(500.0F, 100.0F);
+
+            // Draw line to screen.
+            e.Graphics.DrawLine(blackPen, point1, point2);
         }
     }
 }

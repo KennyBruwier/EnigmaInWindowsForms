@@ -88,5 +88,20 @@
   <ItemGroup>
     <None Include="Resources\Circle.png" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\reset.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Enigma.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\woodLightSeamless.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\woodGrayOrangeSeamless.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\woodDarkSeamless.jpg" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -63,7 +63,6 @@ namespace EnigmaInWindowsForms
                 //}
                 for (int i = 0; i < selectedRotors.GetLength(0); i++)
                 {
-                    int tempi = selectedRotors.GetLength(0) - 1 - i;
                     cOut = Rotors[selectedRotors[selectedRotors.GetLength(0) - 1 - i]].RotorGebruiken(cOut, true);
                     //if (cOut == ' ')
                     //{
@@ -123,6 +122,18 @@ namespace EnigmaInWindowsForms
             }
             else Rotors[selectedRotors[0]].myRotation++;
         }
+        public void ResetAllRotors()
+        {
+            Rotors[selectedRotors[0]].myRotation = 0;
+            Rotors[selectedRotors[1]].myRotation = 0;
+            Rotors[selectedRotors[2]].myRotation = 0;
+        }
+        public void ResetAllRotors(object sender, EventArgs e)
+        {
+            Rotors[selectedRotors[0]].myRotation = 0;
+            Rotors[selectedRotors[1]].myRotation = 0;
+            Rotors[selectedRotors[2]].myRotation = 0;
+        }
     }
     public class Rotor
     {
@@ -174,7 +185,6 @@ namespace EnigmaInWindowsForms
         }
         public char RotorGebruiken (char cIn, bool reverse = false)
         {
-
             if (EncryptionIndex < EncryptionKeysLeft.GetLength(0))
             {
                 string encryptionKeysRight;
@@ -226,9 +236,7 @@ namespace EnigmaInWindowsForms
             for (int i = 0; i < EncryptionKeysLeft.Length; i++)
             {
                 if (cIn == EncryptionKeysLeft[i])
-                {
                     encryptionKeysRight += cOut;
-                }
                 else
                     encryptionKeysRight += EncryptionKeysLeft[i];
             }
@@ -236,10 +244,10 @@ namespace EnigmaInWindowsForms
         }
         public char UseReflector(char cIn)
         {
-            char upperChar = Char.ToUpper(cIn);
+            cIn = Char.ToUpper(cIn);
             for (int i = 0; i < EncryptionKeysLeft.Length; i++)
             {
-                if (upperChar == EncryptionKeysLeft[i])
+                if (cIn == EncryptionKeysLeft[i])
                     return EncryptionKeysRight[i];
             }
             return ' ';
@@ -249,6 +257,10 @@ namespace EnigmaInWindowsForms
             EncryptionKeysLeft = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
             EncryptionKeysRight = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         }
+    }
+    class Reflector : Stecker
+    {
+        public string Naam { get; set; }
     }
     public class Spiegel 
     {
@@ -273,10 +285,6 @@ namespace EnigmaInWindowsForms
             }
             return reflect;
         }
-    }
-    class Reflector : Stecker
-    {
-        public string Naam { get; set; }
     }
 
 }
